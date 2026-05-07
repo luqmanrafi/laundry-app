@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports: 
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=5432
+    depends_on:
+      - db
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: laundry-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_EXTERNAL_PORT:-5433}:5432"
+    volumes:
+      - laundry_db:/var/lib/postgresql/data
+
+volumes:
+  laundry_db:
