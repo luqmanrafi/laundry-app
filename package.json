@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest --config jest.config.cjs",
-    "test:docker": "NODE_ENV=test jest --config jest.config.cjs",
+    "test": "cross-env NODE_ENV=test jest --runInBand --config jest.config.cjs",
+    "test:docker": "NODE_ENV=test jest --runInBand --config jest.config.cjs",
     "start": "node dist/index.js",
     "dev": "nodemon -L --watch src --ext ts --exec tsx src/index.ts",
     "build": "tsc"

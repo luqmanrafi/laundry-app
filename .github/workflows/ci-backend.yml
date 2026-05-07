@@ -1,0 +1,46 @@
+name: Backend CI Pipeline Washweswos
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      db_test:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_USER: admin_test
+          POSTGRES_PASSWORD: password_test
+          POSTGRES_DB: washweswos_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Run Jest unit test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5433
+          DB_USER: admin_test
+          DB_PASSWORD: password_test
+          DB_NAME: washweswos_test
+          JWT_SECRET: rahasia_pipeline_123
+        run: npm run test
