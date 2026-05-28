@@ -36,7 +36,8 @@ describe('Skenario Pemesanan Laundry Lengkap', () => {
         const service = serviceRepo.create({
             namaLayanan: 'Cuci Kilat Test',
             hargaPerKg: 7000,
-            keterangan: 'Cepat selesai'
+            keterangan: 'Cepat selesai',
+            tarifOngkir: 5000 // Menambahkan field yang dibutuhkan
         });
         await serviceRepo.save(service);
         serviceId = service.id;
