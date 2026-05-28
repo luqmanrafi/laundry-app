@@ -13,6 +13,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379
     depends_on:
       - db
   db:
@@ -28,5 +29,26 @@ services:
     volumes:
       - laundry_db:/var/lib/postgresql/data
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: laundry-ngrok
+    restart: unless-stopped
+    command:
+      - "http"
+      - "app:3000"
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+    depends_on:
+      - app
+  redis:
+    image: redis:7
+    container_name: laundry-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 volumes:
   laundry_db:
+  redis_data:

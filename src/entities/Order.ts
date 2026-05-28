@@ -1,15 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from "typeorm";
 import { Service } from "./Service.js";
+import { Transaction } from "./Transaction.js";
 
 @Entity('orders')
 export class Order {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'uuid' })
     userId!: number;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     kurirId!: number;
 
     @ManyToOne(() => Service, (service) => service.order)
@@ -25,6 +26,9 @@ export class Order {
     })
     lokasiPenjemputan!: { type: string; coordinates: number[] };
 
+    @Column({type: 'varchar', nullable: true})
+    deskripsi?: string;
+    
     @Column({
         type: 'varchar',
         default: 'menunggu_kurir'
@@ -39,6 +43,12 @@ export class Order {
 
     @Column({
         type: 'float',
+        default: '0'
+    })
+    ongkir!: number;
+
+    @Column({
+        type: 'float',
         nullable: true
     })
     totalBiaya!: number;
@@ -48,4 +58,12 @@ export class Order {
 
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
+    @OneToMany(() => Transaction, (transaction) => transaction.order)
+    transactions!: Transaction[];
+
+    @Column({
+        type: 'varchar',
+        default: 'unpaid'
+    })
+    paymentStatus!: string;
 }

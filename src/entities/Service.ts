@@ -15,6 +15,9 @@ export class Service {
     @Column({ type: 'varchar', nullable: true })
     keterangan?: string;
 
+    @Column({ type: 'float'})
+    tarifOngkir!: number;
+    
     @OneToMany(() => Order, (order) => order.layanan)
     order!: Order[];
 

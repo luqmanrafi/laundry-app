@@ -6,7 +6,7 @@ import { Service } from "../entities/Service.js";
 
 export const buatPesanan = async (req: authRequest, res: Response): Promise<void> => {
     try {
-        const { serviceId, latitude, longitude } = req.body;
+        const { serviceId, latitude, longitude, deskripsi } = req.body || {};
         const userId = req.user?.id;
         if (!userId || !serviceId || !latitude || !longitude) {
             res.status(400).json({ message: 'Layanan dan lokasi wajib diisi' });
@@ -20,11 +20,23 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
             return;
         }
 
+        const queryJarak = await AppDataSource.manager.query(
+            `SELECT ST_DistanceSphere(
+                ST_MakePoint($1, $2),
+                ST_MakePoint($3, $4)
+            ) as jarak_meter`,
+            [longitude,latitude,process.env.LAUNDRY_LNG,process.env.LAUNDRY_LAT]
+        )
+        const jarakKm = queryJarak[0].jarak_meter/1000;
+        const ongkir = Math.round(jarakKm * serviceData.tarifOngkir);
+
         const orderRepository = AppDataSource.getRepository(Order);
         const orderBaru = orderRepository.create({
             userId: userId,
             layanan: serviceData,
             hargaPerkg: serviceData.hargaPerKg,
+            deskripsi: deskripsi || 'null',
+            ongkir: ongkir,
             lokasiPenjemputan: {
                 type: 'Point',
                 coordinates: [longitude, latitude]
@@ -33,7 +45,11 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
         await orderRepository.save(orderBaru);
         res.status(201).json({
             message: 'Pesanan berhasil dibuat. Menunggu kurir menjemput pesanan Anda.',
-            data: orderBaru
+            data: {
+                jarak: `${jarakKm.toFixed(2)} KM`,
+                ongkir: ongkir,
+                totalEstimasi: 'Akan dihitung setelah kurir input berat'
+            }
         });
     } catch (error) {
         console.error(error);
@@ -77,7 +93,7 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
     }
 }
 
-export const inputBerat = async (req: authRequest, res: Response): Promise<void> => {
+export const takeOrder = async (req: authRequest, res: Response): Promise<void> => {
     try {
         const id = req.params.id;
         if (!id || Array.isArray(id)) {
@@ -110,21 +126,32 @@ export const inputBerat = async (req: authRequest, res: Response): Promise<void>
             });
             return;
         }
-        const totalBiaya = order.hargaPerkg * berat;
+        const totalBiaya = order.hargaPerkg * berat + order.ongkir;
 
-        order.berat = berat;
-        order.totalBiaya = totalBiaya;
-        order.kurirId = kurirId as number;
-        order.status = 'dibawa_kurir_ke_laundry';
+        const updateResult = await orderRepository.update(
+            { id: orderId, status: 'menunggu_kurir' },
+            {
+                berat: berat,
+                totalBiaya: totalBiaya,
+                kurirId: kurirId as number,
+                status: 'dibawa_kurir_ke_laundry'
+            }
+        );
 
-        await orderRepository.save(order);
+        if (updateResult.affected === 0) {
+            res.status(400).json({
+                message: 'Pesanan gagal diproses, kemungkinan pesanan baru saja diambil oleh kurir lain.',
+            });
+            return;
+        }
+
         res.status(200).json({
             message: 'Berat sudah ditambahkan. memproses pesanan',
             data: {
                 orderId: order.id,
-                berat: order.berat,
-                totalBiaya: order.totalBiaya,
-                status: order.status
+                berat: berat,
+                totalBiaya: totalBiaya,
+                status: 'dibawa_kurir_ke_laundry'
             }
         });
     } catch (error) {
@@ -190,17 +217,17 @@ export const updateStatusOrder = async (req: authRequest, res: Response): Promis
         }
 
         const orderRepository = AppDataSource.getRepository(Order);
-        const order = await orderRepository.findOne({where: {id: orderId}});
-        if(!order){
+        const updateResult = await orderRepository.update(orderId, { status });
+
+        if(updateResult.affected === 0){
             res.status(404).json({message: 'ID order tidak dapat ditemukan.'});
             return;
         }
 
-        order.status = status;
-        await orderRepository.save(order);
+        const updatedOrder = await orderRepository.findOne({where: {id: orderId}});
         res.status(200).json({
             message: `Status pesanan berhasil diubah menjadi: ${status}`,
-            data: order 
+            data: updatedOrder 
         });
     } catch (error) {
         console.error('Error ketika mengupdate status order : ', error);

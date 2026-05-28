@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { User} from './src/entities/User.js';
 import { Order } from './src/entities/Order.js';
 import { Service } from './src/entities/Service.js';
+import { Transaction } from './src/entities/Transaction.js';
 
 const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
@@ -22,7 +23,7 @@ export const AppDataSource = new DataSource({
     database: DB_NAME,
     synchronize: true, 
     logging: false,
-    entities: [User, Order, Service], 
+    entities: [User, Order, Service, Transaction], 
     subscribers: [],
     migrations: [],
 });
