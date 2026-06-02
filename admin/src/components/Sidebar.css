@@ -136,49 +136,34 @@
 .sidebar__user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 12px;
+  overflow: hidden;
   margin-bottom: 12px;
 }
 
 .sidebar__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent-gradient);
+  min-width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
-  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .sidebar__user-info {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   min-width: 0;
 }
 
 .sidebar__user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sidebar__user-email {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sidebar__user-status {
   display: flex;
   align-items: center;
   gap: 4px;

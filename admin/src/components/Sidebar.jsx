@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { WashingMachine, LayoutDashboard, Package, Truck, Users, ReceiptText, Tag, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const menuUtama = [
@@ -17,6 +18,12 @@ const menuSistem = [
 
 export default function Sidebar({ collapsed, onToggle }) {
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const getInitials = (name) => {
+    if (!name) return 'A';
+    return name.charAt(0).toUpperCase();
+  };
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
@@ -74,13 +81,18 @@ export default function Sidebar({ collapsed, onToggle }) {
       </nav>
 
       <div className="sidebar__footer">
-        <div className="sidebar__user">
+        <button className="sidebar__logout-btn" onClick={logout} title="Logout">
+          <LogOut size={18} />
+          {!collapsed && <span>Logout</span>}
+        </button>
+        
+        <div className="sidebar__user" style={{ marginTop: '12px' }}>
           <div className="sidebar__avatar">
-            A
+            {getInitials(user?.nama)}
           </div>
           {!collapsed && (
             <div className="sidebar__user-info">
-              <span className="sidebar__user-name">Admin Utama</span>
+              <span className="sidebar__user-name">{user?.nama || 'Admin Utama'}</span>
               <span className="sidebar__user-role">Administrator</span>
             </div>
           )}

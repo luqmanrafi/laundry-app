@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
@@ -9,6 +9,9 @@ import Pelanggan from './pages/Pelanggan';
 import Layanan from './pages/Layanan';
 import Invoice from './pages/Invoice';
 import Pengaturan from './pages/Pengaturan';
+import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 const pageTitles = {
@@ -40,6 +43,7 @@ function AppLayout() {
             <Route path="/layanan" element={<Layanan />} />
             <Route path="/invoice" element={<Invoice />} />
             <Route path="/pengaturan" element={<Pengaturan />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
@@ -49,10 +53,20 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/*" element={<AppLayout />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route 
+            path="/*" 
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }

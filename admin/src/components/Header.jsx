@@ -1,13 +1,21 @@
 import { Calendar, Bell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
 
 export default function Header({ title, subtitle }) {
+  const { user } = useAuth();
+  
   const today = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
+
+  const getInitials = (name) => {
+    if (!name) return 'A';
+    return name.charAt(0).toUpperCase();
+  };
 
   return (
     <header className="header">
@@ -26,9 +34,9 @@ export default function Header({ title, subtitle }) {
         </button>
         <div className="header__profile">
           <div className="header__profile-avatar">
-            A
+            {getInitials(user?.nama)}
           </div>
-          <span className="header__profile-name">Admin Utama</span>
+          <span className="header__profile-name">{user?.nama || 'Admin Utama'}</span>
         </div>
       </div>
     </header>
