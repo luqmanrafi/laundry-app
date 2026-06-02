@@ -19,11 +19,12 @@ afterAll(async () =>{
 
 describe('Skenario Pemesanan Laundry Lengkap', () => {
     const secret = process.env.JWT_SECRET || 'secret';
-    const tokenPelanggan = jwt.sign({id: 99, role: 'pelanggan'}, secret as string, {expiresIn: '1h'})
-    const tokenKurir = jwt.sign({id: 98, role: 'kurir'}, secret as string, {expiresIn: '1h'});
+    const tokenPelanggan = jwt.sign({id: '123e4567-e89b-12d3-a456-426614174099', role: 'pelanggan'}, secret as string, {expiresIn: '1h'})
+    const tokenKurir = jwt.sign({id: '123e4567-e89b-12d3-a456-426614174098', role: 'kurir'}, secret as string, {expiresIn: '1h'});
     
     let serviceId: number;
     let orderId: number;
+    let ongkir: number;
 
     beforeAll(async () => {
         // Cleanup existing data to avoid conflicts during testing
@@ -65,6 +66,7 @@ describe('Skenario Pemesanan Laundry Lengkap', () => {
         expect(response.body.data.lokasiPenjemputan).toHaveProperty('type', 'Point');
         
         orderId = response.body.data.id; // Save for next tests
+        ongkir = response.body.data.ongkir;
     });
 
     it('2. Tidak Bisa membuat order tanpa data lengkap', async () => {
@@ -105,14 +107,14 @@ describe('Skenario Pemesanan Laundry Lengkap', () => {
 
     it('5. Kurir bisa menginput berat pesanan', async () => {
         const response = await request(app)
-        .put(`/api/orders/${orderId}/berat`)
+        .put(`/api/orders/${orderId}/take`)
         .set('Authorization', `Bearer ${tokenKurir}`)
         .send({ berat: 3 });
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toHaveProperty('message', 'Berat sudah ditambahkan. memproses pesanan');
         expect(response.body.data.berat).toBe(3);
-        expect(response.body.data.totalBiaya).toBe(3 * 7000); // berat * hargaPerKg
+        expect(response.body.data.totalBiaya).toBe(3 * 7000 + ongkir); // berat * hargaPerKg + ongkir
         expect(response.body.data.status).toBe('dibawa_kurir_ke_laundry');
     });
 

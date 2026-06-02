@@ -18,9 +18,8 @@ afterAll(async () =>{
 
 describe('Skenario Service / Layanan API', () => {
     const secret = process.env.JWT_SECRET || 'secret';
-    // Mock token untuk admin dan pelanggan
-    const tokenAdmin = jwt.sign({id: 1, role: 'admin'}, secret as string, {expiresIn: '1h'})
-    const tokenPelanggan = jwt.sign({id: 2, role: 'pelanggan'}, secret as string, {expiresIn: '1h'})
+    const tokenAdmin = jwt.sign({id: '123e4567-e89b-12d3-a456-426614174001', role: 'admin'}, secret as string, {expiresIn: '1h'})
+    const tokenPelanggan = jwt.sign({id: '123e4567-e89b-12d3-a456-426614174002', role: 'pelanggan'}, secret as string, {expiresIn: '1h'})
     
     let serviceId: number;
 

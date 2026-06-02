@@ -46,9 +46,11 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
         res.status(201).json({
             message: 'Pesanan berhasil dibuat. Menunggu kurir menjemput pesanan Anda.',
             data: {
+                id: orderBaru.id,
                 jarak: `${jarakKm.toFixed(2)} KM`,
                 ongkir: ongkir,
-                totalEstimasi: 'Akan dihitung setelah kurir input berat'
+                totalEstimasi: 'Akan dihitung setelah kurir input berat',
+                lokasiPenjemputan: orderBaru.lokasiPenjemputan
             }
         });
     } catch (error) {
@@ -159,7 +161,7 @@ export const takeOrder = async (req: authRequest, res: Response): Promise<void> 
             {
                 berat: berat,
                 totalBiaya: totalBiaya,
-                kurirId: kurirId as number,
+                kurirId: kurirId as string,
                 status: 'dibawa_kurir_ke_laundry'
             }
         );

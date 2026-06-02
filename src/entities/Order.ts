@@ -8,10 +8,10 @@ export class Order {
     id!: number;
 
     @Column({ type: 'uuid' })
-    userId!: number;
+    userId!: string;
 
     @Column({ type: 'uuid', nullable: true })
-    kurirId!: number;
+    kurirId!: string;
 
     @ManyToOne(() => Service, (service) => service.order)
     layanan!: Service;
