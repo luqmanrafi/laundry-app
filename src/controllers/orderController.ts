@@ -3,6 +3,7 @@ import { type authRequest } from "../authMiddleware.js";
 import { Order } from "../entities/Order.js";
 import { AppDataSource } from "../../data-source.js";
 import { Service } from "../entities/Service.js";
+import { User } from "../entities/User.js";
 
 export const buatPesanan = async (req: authRequest, res: Response): Promise<void> => {
     try {
@@ -259,6 +260,131 @@ export const updateStatusOrder = async (req: authRequest, res: Response): Promis
         });
     } catch (error) {
         console.error('Error ketika mengupdate status order : ', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+}
+
+export const getAllOrders = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const { status, search, page = '1', limit = '20' } = req.query;
+        const orderRepository = AppDataSource.getRepository(Order);
+
+        const queryBuilder = orderRepository
+            .createQueryBuilder('order')
+            .leftJoinAndSelect('order.layanan', 'layanan')
+            .orderBy('order.createdAt', 'DESC');
+
+        if (status && typeof status === 'string') {
+            queryBuilder.andWhere('order.status = :status', { status });
+        }
+
+        if (search && typeof search === 'string') {
+            const searchNum = parseInt(search);
+            if (!isNaN(searchNum)) {
+                queryBuilder.andWhere('order.id = :searchId', { searchId: searchNum });
+            }
+        }
+
+        const pageNum = parseInt(page as string) || 1;
+        const limitNum = parseInt(limit as string) || 20;
+        const skip = (pageNum - 1) * limitNum;
+
+        const [orders, total] = await queryBuilder
+            .skip(skip)
+            .take(limitNum)
+            .getManyAndCount();
+
+        res.status(200).json({
+            message: 'Berhasil mendapatkan semua pesanan',
+            data: orders,
+            total,
+            page: pageNum,
+            totalPages: Math.ceil(total / limitNum)
+        });
+    } catch (error) {
+        console.error('Error getAllOrders:', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+}
+
+export const getDashboardStats = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const orderRepository = AppDataSource.getRepository(Order);
+        const userRepository = AppDataSource.getRepository(User);
+
+        // Total pesanan
+        const totalOrders = await orderRepository.count();
+
+        // Pesanan aktif (belum selesai)
+        const activeOrders = await orderRepository
+            .createQueryBuilder('order')
+            .where('order.status != :status', { status: 'selesai' })
+            .getCount();
+
+        // Pesanan selesai
+        const completedOrders = await orderRepository
+            .createQueryBuilder('order')
+            .where('order.status = :status', { status: 'selesai' })
+            .getCount();
+
+        // Total pendapatan (dari pesanan yang sudah selesai / paid)
+        const revenueResult = await orderRepository
+            .createQueryBuilder('order')
+            .select('COALESCE(SUM(order.totalBiaya), 0)', 'total')
+            .where('order.paymentStatus = :ps', { ps: 'paid' })
+            .getRawOne();
+        const totalRevenue = parseFloat(revenueResult?.total || '0');
+
+        // Total pelanggan
+        const totalCustomers = await userRepository.count({ where: { role: 'pelanggan' } });
+
+        // Total kurir
+        const totalCouriers = await userRepository.count({ where: { role: 'kurir' } });
+
+        // Status breakdown
+        const statusBreakdown = await orderRepository
+            .createQueryBuilder('order')
+            .select('order.status', 'status')
+            .addSelect('COUNT(*)', 'count')
+            .groupBy('order.status')
+            .getRawMany();
+
+        // Pendapatan 7 hari terakhir
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const revenueByDay = await orderRepository
+            .createQueryBuilder('order')
+            .select("DATE(order.createdAt)", 'date')
+            .addSelect('COALESCE(SUM(order.totalBiaya), 0)', 'total')
+            .where('order.createdAt >= :startDate', { startDate: sevenDaysAgo })
+            .andWhere('order.paymentStatus = :ps', { ps: 'paid' })
+            .groupBy("DATE(order.createdAt)")
+            .orderBy("DATE(order.createdAt)", 'ASC')
+            .getRawMany();
+
+        // Pesanan terbaru (5 terakhir)
+        const recentOrders = await orderRepository.find({
+            relations: ['layanan'],
+            order: { createdAt: 'DESC' },
+            take: 5
+        });
+
+        res.status(200).json({
+            message: 'Berhasil mendapatkan statistik dashboard',
+            data: {
+                totalOrders,
+                activeOrders,
+                completedOrders,
+                totalRevenue,
+                totalCustomers,
+                totalCouriers,
+                statusBreakdown,
+                revenueByDay,
+                recentOrders
+            }
+        });
+    } catch (error) {
+        console.error('Error getDashboardStats:', error);
         res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
     }
 }

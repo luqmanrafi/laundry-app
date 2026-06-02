@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { getAllService, addService, updateService, deleteService } from '../controllers/serviceController.js';
-import { verifyToken, authorizeRole } from '../authMiddleware.js';
 
 const router = Router();
 
 router.get('/services', getAllService);
-router.post('/services', verifyToken, authorizeRole(['admin']),
+router.post('/services',
     (req, res, next) => {
         const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir'];
         const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
@@ -19,7 +18,7 @@ router.post('/services', verifyToken, authorizeRole(['admin']),
     },
     addService
 );
-router.put('/services/:id', verifyToken, authorizeRole(['admin']),
+router.put('/services/:id',
     (req, res, next) => {
         const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir'];
         const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
@@ -33,6 +32,6 @@ router.put('/services/:id', verifyToken, authorizeRole(['admin']),
     },
     updateService
 );
-router.delete('/services/:id', verifyToken, authorizeRole(['admin']), deleteService);
+router.delete('/services/:id', deleteService);
 
 export default router;
