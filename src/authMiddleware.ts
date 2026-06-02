@@ -3,7 +3,7 @@ import  jwt  from "jsonwebtoken";
 
 export interface authRequest extends Request{
     user?: {
-        id: number;
+        id: string;
         role: string;
     };
 }
@@ -27,7 +27,7 @@ export const verifyToken = (req: authRequest, res: Response, next: NextFunction)
         return;
     }
     try{
-        const decoded = jwt.verify(token, secret) as unknown as { id: number; role: string };
+        const decoded = jwt.verify(token, secret) as unknown as { id: string; role: string };
         req.user = decoded;
         next();
     } catch(error){
