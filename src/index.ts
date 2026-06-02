@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { connectRedis } from './config/redisClient.js';
 import { setupTrackingSockets } from './sockets/trackingSockets.js';
 
@@ -22,12 +23,25 @@ const io = new Server(server, {
     cors: {origin: '*', methods: ['GET', 'POST']}
 })
 
+// CORS middleware untuk admin frontend
+app.use((req: Request, res: Response, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+        return;
+    }
+    next();
+});
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api/admin', adminRoutes);
 app.get('/', (req: Request, res: Response)=>{
     res.json({
         message: 'sukses',
