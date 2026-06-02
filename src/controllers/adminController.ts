@@ -32,7 +32,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
 
 export const getUserById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         
         const user = await userRepository.findOne({
             where: { id },
@@ -56,7 +56,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const id = req.params.id as string;
 
         const user = await userRepository.findOne({ where: { id } });
         if (!user) {
