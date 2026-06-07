@@ -17,6 +17,9 @@ export class Service {
 
     @Column({ type: 'float'})
     tarifOngkir!: number;
+
+    @Column({ type: 'int', default: 3 })
+    estimasiHari!: number;
     
     @OneToMany(() => Order, (order) => order.layanan)
     order!: Order[];

@@ -39,7 +39,8 @@ describe('Skenario Service / Layanan API', () => {
             namaLayanan: 'Cuci Biasa Test',
             hargaPerKg: 5000,
             keterangan: 'Biasa saja',
-            tarifOngkir: 1000
+            tarifOngkir: 1000,
+            estimasiHari: 2
         }));
 
         const response = await request(app).get('/api/services');
@@ -58,7 +59,8 @@ describe('Skenario Service / Layanan API', () => {
                 namaLayanan: 'Cuci Express',
                 hargaPerKg: 10000,
                 keterangan: 'Sehari jadi',
-                tarifOngkir: 2000
+                tarifOngkir: 2000,
+                estimasiHari: 1
             });
         
         expect(response.statusCode).toBe(201);
@@ -76,7 +78,8 @@ describe('Skenario Service / Layanan API', () => {
                 namaLayanan: 'Cuci Haram',
                 hargaPerKg: 5000,
                 keterangan: '...',
-                tarifOngkir: 1000
+                tarifOngkir: 1000,
+                estimasiHari: 3
             });
         
         expect(response.statusCode).toBe(403); // as defined in authorizeRole middleware
@@ -102,7 +105,8 @@ describe('Skenario Service / Layanan API', () => {
             namaLayanan: 'Layanan A',
             hargaPerKg: 6000,
             keterangan: '-',
-            tarifOngkir: 0
+            tarifOngkir: 0,
+            estimasiHari: 3
         }));
 
         const response = await request(app)
@@ -112,7 +116,8 @@ describe('Skenario Service / Layanan API', () => {
                 namaLayanan: 'Layanan A Updated',
                 hargaPerKg: 7500,
                 keterangan: 'Updated',
-                tarifOngkir: 500
+                tarifOngkir: 500,
+                estimasiHari: 2
             });
         
         expect(response.statusCode).toBe(200);
@@ -128,7 +133,8 @@ describe('Skenario Service / Layanan API', () => {
             namaLayanan: 'Layanan Hapus',
             hargaPerKg: 6000,
             keterangan: '-',
-            tarifOngkir: 0
+            tarifOngkir: 0,
+            estimasiHari: 1
         }));
 
         const response = await request(app)
