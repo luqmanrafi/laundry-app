@@ -20,10 +20,10 @@ export const getAllService = async (req: Request, res: Response)=>{
 
 export const addService = async (req: Request, res: Response)=>{
     try{
-        const { namaLayanan, hargaPerKg, keterangan, tarifOngkir } = req.body;
-        if(!namaLayanan || !hargaPerKg || tarifOngkir === undefined){
+        const { namaLayanan, hargaPerKg, keterangan, tarifOngkir, estimasiHari } = req.body;
+        if(!namaLayanan || !hargaPerKg || tarifOngkir === undefined || estimasiHari === undefined){
             return res.status(400).json({
-                message: "Nama layanan, harga per kg, dan tarif ongkir wajib diisi",
+                message: "Nama layanan, harga per kg, tarif ongkir, dan estimasi hari wajib diisi",
             });
         }
         const existingService = await serviceRepository.findOne({
@@ -38,7 +38,8 @@ export const addService = async (req: Request, res: Response)=>{
             namaLayanan,
             hargaPerKg,
             keterangan,
-            tarifOngkir
+            tarifOngkir,
+            estimasiHari
         });
         await serviceRepository.save(newService);
         return res.status(201).json({
@@ -63,17 +64,18 @@ export const updateService = async (req: Request, res: Response)=>{
         if (isNaN(id)) {
             return res.status(400).json({ message: 'ID layanan harus berupa angka.' });
         }
-        const { namaLayanan, hargaPerKg, keterangan, tarifOngkir } = req.body;
-        if(!namaLayanan || !hargaPerKg || tarifOngkir === undefined){
+        const { namaLayanan, hargaPerKg, keterangan, tarifOngkir, estimasiHari } = req.body;
+        if(!namaLayanan || !hargaPerKg || tarifOngkir === undefined || estimasiHari === undefined){
             return res.status(400).json({
-                message: "Nama layanan, harga per kg, dan tarif ongkir wajib diisi",
+                message: "Nama layanan, harga per kg, tarif ongkir, dan estimasi hari wajib diisi",
             });
         }
         const updateResult = await serviceRepository.update(id, {
             namaLayanan,
             hargaPerKg,
             keterangan,
-            tarifOngkir
+            tarifOngkir,
+            estimasiHari
         });
 
         if(updateResult.affected === 0){
@@ -84,7 +86,7 @@ export const updateService = async (req: Request, res: Response)=>{
         
         return res.status(200).json({
             message: "Layanan berhasil diupdate",
-            data: { id, namaLayanan, hargaPerKg, keterangan, tarifOngkir }
+            data: { id, namaLayanan, hargaPerKg, keterangan, tarifOngkir, estimasiHari }
         });
     } catch (errror){
         console.error(errror);

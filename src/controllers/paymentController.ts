@@ -2,22 +2,39 @@ import type { Request, Response } from 'express';
 import { paymentService } from '../services/paymentService.js';
 import { AppDataSource } from '../../data-source.js';
 import { Order } from '../entities/Order.js';
+import { User } from '../entities/User.js';
 
-export const payOrder = async (req: Request, res: Response): Promise<void> => {
+import { type authRequest } from '../authMiddleware.js';
+
+export const payOrder = async (req: authRequest, res: Response): Promise<void> => {
     try {
-        const { orderId } = req.params;
-        // In a real app, calculate amount from order.totalBiaya or similar, ensuring it is correct
-        // For demonstration, we assume body has amount or we calculate it.
+        const { id } = req.params;
         const orderRepository = AppDataSource.getRepository(Order);
-        const order = await orderRepository.findOne({ where: { id: parseInt(orderId as string) } });
-
+        const order = await orderRepository.findOne({ where: { id: parseInt(id as string) } });
+        
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return;
         }
+
+        if (order.userId !== req.user?.id) {
+            res.status(403).json({ message: "Akses ditolak. Anda tidak dapat membayar pesanan milik pengguna lain." });
+            return;
+        }
+
+        const isPaymentValid = order.paymentStatus === 'paid' || order.paymentStatus === 'settlement';
         
-        // Ensure totalBiaya is set, fallback to 10000 for test
-        const amount = order.totalBiaya || 10000;
+        if (order.status === 'menunggu_kurir' || order.status === 'kurir_menuju_lokasi' || order.totalBiaya === null || order.status === 'selesai' || order.status === 'diterima_pelanggan') {
+            res.status(400).json({ message: "Order tidak dapat dibayar. Tunggu kurir selesai memasukkan berat." });
+            return;
+        }
+
+        if (isPaymentValid) {
+            res.status(400).json({ message: "Order tidak dapat dibayar. Payment sudah berhasil." }); 
+            return;
+        }
+        
+        const amount = order.totalBiaya;
 
         const transaction = await paymentService.createTransaction(order, amount);
         

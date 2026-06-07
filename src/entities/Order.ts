@@ -53,6 +53,12 @@ export class Order {
     })
     totalBiaya!: number;
 
+    @Column({ type: 'timestamp', nullable: true })
+    estimasiSelesai!: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    waktuSelesai!: Date;
+
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
