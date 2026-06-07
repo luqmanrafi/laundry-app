@@ -12,6 +12,13 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 const {DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME} = process.env;
 if (!DB_HOST || !DB_PORT || !DB_USER || !DB_PASSWORD || !DB_NAME){
+    console.error("Missing ENV:", {
+        DB_HOST: !!DB_HOST, 
+        DB_PORT: !!DB_PORT, 
+        DB_USER: !!DB_USER, 
+        DB_PASSWORD: !!DB_PASSWORD, 
+        DB_NAME: !!DB_NAME
+    });
     throw new Error("Fatal ERROR! Pastikan konfigurasi pada .env terisi semua.")
 }
 export const AppDataSource = new DataSource({
