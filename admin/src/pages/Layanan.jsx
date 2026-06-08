@@ -8,7 +8,7 @@ export default function Layanan() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  const [form, setForm] = useState({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '' });
+  const [form, setForm] = useState({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '', estimasiHari: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,7 +29,7 @@ export default function Layanan() {
 
   const openAddModal = () => {
     setEditingService(null);
-    setForm({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '' });
+    setForm({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '', estimasiHari: '3' });
     setError('');
     setShowModal(true);
   };
@@ -41,6 +41,7 @@ export default function Layanan() {
       hargaPerKg: service.hargaPerKg.toString(),
       keterangan: service.keterangan || '',
       tarifOngkir: service.tarifOngkir.toString(),
+      estimasiHari: service.estimasiHari?.toString() || '3',
     });
     setError('');
     setShowModal(true);
@@ -56,6 +57,7 @@ export default function Layanan() {
       hargaPerKg: parseFloat(form.hargaPerKg),
       keterangan: form.keterangan || null,
       tarifOngkir: parseFloat(form.tarifOngkir),
+      estimasiHari: parseInt(form.estimasiHari) || 3,
     };
 
     try {
@@ -133,6 +135,10 @@ export default function Layanan() {
                   <span className="layanan__price-label">Tarif Ongkir/km</span>
                   <span className="layanan__price-value">{formatRupiah(service.tarifOngkir)}</span>
                 </div>
+                <div className="layanan__price-item">
+                  <span className="layanan__price-label">Estimasi Waktu</span>
+                  <span className="layanan__price-value">{service.estimasiHari || 3} Hari</span>
+                </div>
               </div>
             </div>
           ))
@@ -184,6 +190,17 @@ export default function Layanan() {
                     placeholder="3000"
                     required
                     min="0"
+                  />
+                </div>
+                <div className="layanan__field">
+                  <label>Estimasi (Hari)</label>
+                  <input
+                    type="number"
+                    value={form.estimasiHari}
+                    onChange={(e) => setForm({ ...form, estimasiHari: e.target.value })}
+                    placeholder="3"
+                    required
+                    min="1"
                   />
                 </div>
               </div>
