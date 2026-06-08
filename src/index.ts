@@ -41,7 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', paymentRoutes);
-app.use('/', adminRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({ status: 'Running' });

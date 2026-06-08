@@ -8,7 +8,7 @@ export default function Layanan() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  const [form, setForm] = useState({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '' });
+  const [form, setForm] = useState({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '', estimasiHari: '3' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,7 +29,7 @@ export default function Layanan() {
 
   const openAddModal = () => {
     setEditingService(null);
-    setForm({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '' });
+    setForm({ namaLayanan: '', hargaPerKg: '', keterangan: '', tarifOngkir: '', estimasiHari: '3' });
     setError('');
     setShowModal(true);
   };
@@ -41,6 +41,7 @@ export default function Layanan() {
       hargaPerKg: service.hargaPerKg.toString(),
       keterangan: service.keterangan || '',
       tarifOngkir: service.tarifOngkir.toString(),
+      estimasiHari: service.estimasiHari ? service.estimasiHari.toString() : '3',
     });
     setError('');
     setShowModal(true);
@@ -56,6 +57,7 @@ export default function Layanan() {
       hargaPerKg: parseFloat(form.hargaPerKg),
       keterangan: form.keterangan || null,
       tarifOngkir: parseFloat(form.tarifOngkir),
+      estimasiHari: parseInt(form.estimasiHari),
     };
 
     try {
@@ -186,6 +188,17 @@ export default function Layanan() {
                     min="0"
                   />
                 </div>
+              </div>
+              <div className="layanan__field">
+                <label>Estimasi Hari Pengerjaan</label>
+                <input
+                  type="number"
+                  value={form.estimasiHari}
+                  onChange={(e) => setForm({ ...form, estimasiHari: e.target.value })}
+                  placeholder="3"
+                  required
+                  min="1"
+                />
               </div>
               <div className="layanan__field">
                 <label>Keterangan (opsional)</label>
