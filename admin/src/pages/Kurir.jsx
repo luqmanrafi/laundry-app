@@ -97,10 +97,19 @@ export default function Kurir() {
                   <h3 className="kurir__name">{courier.nama}</h3>
                   <p className="kurir__email">{courier.email}</p>
                 </div>
-                <span className="kurir__status-badge">
-                  <span className="kurir__status-dot"></span>
-                  Aktif
-                </span>
+                <div className="kurir__actions">
+                  <span className="kurir__status-badge">
+                    <span className="kurir__status-dot"></span>
+                    Aktif
+                  </span>
+                  <button 
+                    className="kurir__delete-btn"
+                    onClick={() => handleDelete(courier.id)}
+                    title="Hapus Kurir"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
               <div className="kurir__details">
                 <div className="kurir__detail-item">
@@ -111,15 +120,6 @@ export default function Kurir() {
                   <span className="kurir__detail-label">Bergabung</span>
                   <span className="kurir__detail-value">{formatDate(courier.created_at)}</span>
                 </div>
-              </div>
-              <div className="kurir__actions">
-                <button 
-                  className="kurir__delete-btn"
-                  onClick={() => handleDelete(courier.id)}
-                  title="Hapus Kurir"
-                >
-                  <Trash2 size={16} />
-                </button>
               </div>
             </div>
           ))

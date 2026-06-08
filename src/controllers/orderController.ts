@@ -431,6 +431,38 @@ export const updateStatusOrder = async (req: authRequest, res: Response): Promis
     }
 }
 
+export const deleteOrder = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id;
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: 'ID order tidak valid.' });
+            return;
+        }
+        const orderId = parseInt(id);
+        if (isNaN(orderId)) {
+            res.status(400).json({ message: 'ID order harus berupa angka.' });
+            return;
+        }
+
+        const orderRepository = AppDataSource.getRepository(Order);
+        const order = await orderRepository.findOne({ where: { id: orderId } });
+        
+        if (!order) {
+            res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
+            return;
+        }
+
+        await orderRepository.remove(order);
+
+        res.status(200).json({
+            message: `Pesanan dengan ID ${orderId} berhasil dihapus.`,
+        });
+    } catch (error) {
+        console.error('Error ketika menghapus order : ', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+}
+
 export const getAllOrders = async (req: authRequest, res: Response): Promise<void> => {
     try {
         const { status, search, page = '1', limit = '20' } = req.query;

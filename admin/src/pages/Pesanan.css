@@ -395,3 +395,34 @@
   color: var(--text-muted);
   font-size: 12px;
 }
+
+.pesanan__actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.pesanan__actions-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pesanan__delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pesanan__delete-btn:hover {
+  background: var(--danger);
+  color: #fff;
+}
