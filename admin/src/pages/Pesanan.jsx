@@ -115,7 +115,8 @@ export default function Pesanan() {
                     <th>Total Biaya</th>
                     <th>Status</th>
                     <th>Pembayaran</th>
-                    <th>Tanggal</th>
+                    <th>Tanggal Dibuat</th>
+                    <th>Estimasi Selesai</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,11 +130,12 @@ export default function Pesanan() {
                       <td><StatusBadge status={order.status} /></td>
                       <td><StatusBadge status={order.paymentStatus} /></td>
                       <td className="pesanan__date">{formatDate(order.createdAt)}</td>
+                      <td className="pesanan__date">{order.estimasiSelesai ? formatDate(order.estimasiSelesai) : '-'}</td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan="8" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
+                      <td colSpan="9" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
                     </tr>
                   )}
                 </tbody>
