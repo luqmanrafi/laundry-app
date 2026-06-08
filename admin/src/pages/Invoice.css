@@ -31,4 +31,27 @@
 .invoice__date { font-size: 12px !important; color: var(--text-muted) !important; }
 .invoice__empty { text-align: center; padding: 48px 16px !important; color: var(--text-muted) !important; }
 
+.invoice__paid-btn {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.invoice__paid-btn:hover:not(:disabled) {
+  background: var(--success);
+  color: #fff;
+}
+
+.invoice__paid-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) { .invoice__summary { grid-template-columns: 1fr; } }

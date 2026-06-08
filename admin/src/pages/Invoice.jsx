@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
 import StatusBadge from '../components/StatusBadge';
-import { Banknote, Hourglass, BarChart2 } from 'lucide-react';
+import { Banknote, Hourglass, BarChart2, CheckCircle } from 'lucide-react';
 import './Invoice.css';
 
 export default function Invoice() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => { fetchOrders(); }, []);
 
@@ -17,6 +18,19 @@ export default function Invoice() {
       setOrders(res.data.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
+  };
+
+  const handleMarkPaid = async (id) => {
+    if (!window.confirm('Yakin ingin menandai pesanan ini sebagai Lunas?')) return;
+    setUpdating(true);
+    try {
+      await client.put(`/orders/${id}/payment-status`);
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal mengubah status pembayaran');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const fmt = (n) => n ? new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n) : '-';
@@ -53,7 +67,7 @@ export default function Invoice() {
       <div className="invoice__card">
         {loading ? <div className="invoice__loading"><div className="invoice__spinner"></div><p>Memuat...</p></div> : (
           <div className="invoice__table-wrap"><table className="invoice__table"><thead><tr>
-            <th>ID</th><th>Layanan</th><th>Berat</th><th>Ongkir</th><th>Total</th><th>Status</th><th>Bayar</th><th>Tanggal</th>
+            <th>ID</th><th>Layanan</th><th>Berat</th><th>Ongkir</th><th>Total</th><th>Status</th><th>Bayar</th><th>Tanggal</th><th>Aksi</th>
           </tr></thead><tbody>
             {filtered.map(o=><tr key={o.id}>
               <td className="invoice__id">INV-{String(o.id).padStart(5,'0')}</td>
@@ -61,6 +75,18 @@ export default function Invoice() {
               <td>{fmt(o.ongkir)}</td><td className="invoice__amount">{fmt(o.totalBiaya)}</td>
               <td><StatusBadge status={o.status}/></td><td><StatusBadge status={o.paymentStatus}/></td>
               <td className="invoice__date">{fmtDate(o.createdAt)}</td>
+              <td>
+                {(o.paymentStatus === 'unpaid' || o.paymentStatus === 'pending') && (
+                  <button 
+                    className="invoice__paid-btn"
+                    onClick={() => handleMarkPaid(o.id)}
+                    disabled={updating}
+                    title="Tandai Lunas"
+                  >
+                    <CheckCircle size={16} />
+                  </button>
+                )}
+              </td>
             </tr>)}
             {filtered.length===0&&<tr><td colSpan="8" className="invoice__empty">Tidak ada data</td></tr>}
           </tbody></table></div>

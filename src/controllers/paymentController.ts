@@ -62,3 +62,40 @@ export const handleMidtransWebhook = async (req: Request, res: Response): Promis
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const updatePaymentStatusManual = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id;
+        if (!id || typeof id !== 'string') {
+            res.status(400).json({ message: 'ID order tidak valid.' });
+            return;
+        }
+        
+        const orderId = parseInt(id);
+        const orderRepository = AppDataSource.getRepository(Order);
+        const order = await orderRepository.findOne({ where: { id: orderId } });
+        
+        if (!order) {
+            res.status(404).json({ message: 'ID order tidak dapat ditemukan.' });
+            return;
+        }
+
+        // Hanya izinkan admin yang bisa update manual
+        if (req.user?.role !== 'admin') {
+            res.status(403).json({ message: 'Akses ditolak. Hanya admin yang dapat melakukan aksi ini.' });
+            return;
+        }
+
+        // Update paymentStatus jadi paid
+        await orderRepository.update(orderId, { paymentStatus: 'paid' });
+
+        const updatedOrder = await orderRepository.findOne({ where: { id: orderId } });
+        res.status(200).json({
+            message: 'Status pembayaran berhasil diubah menjadi Lunas',
+            data: updatedOrder 
+        });
+    } catch (error) {
+        console.error('Error update payment manual:', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+};

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
 import StatusBadge from '../components/StatusBadge';
-import { Search } from 'lucide-react';
+import { Search, Edit, X } from 'lucide-react';
 import './Pesanan.css';
 
 const statusOptions = [
@@ -22,6 +22,10 @@ export default function Pesanan() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  
+  // Modal State
+  const [editModal, setEditModal] = useState({ isOpen: false, order: null, status: '' });
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -48,6 +52,22 @@ export default function Pesanan() {
     e.preventDefault();
     setPage(1);
     fetchOrders();
+  };
+
+  const handleUpdateStatus = async (e) => {
+    e.preventDefault();
+    if (!editModal.order || !editModal.status) return;
+    
+    setUpdating(true);
+    try {
+      await client.put(`/orders/${editModal.order.id}/status`, { status: editModal.status });
+      setEditModal({ isOpen: false, order: null, status: '' });
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal mengubah status pesanan');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const formatRupiah = (num) => {
@@ -117,6 +137,7 @@ export default function Pesanan() {
                     <th>Pembayaran</th>
                     <th>Tanggal Dibuat</th>
                     <th>Estimasi Selesai</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,6 +152,15 @@ export default function Pesanan() {
                       <td><StatusBadge status={order.paymentStatus} /></td>
                       <td className="pesanan__date">{formatDate(order.createdAt)}</td>
                       <td className="pesanan__date">{order.estimasiSelesai ? formatDate(order.estimasiSelesai) : '-'}</td>
+                      <td>
+                        <button 
+                          className="pesanan__edit-btn"
+                          onClick={() => setEditModal({ isOpen: true, order, status: order.status })}
+                          title="Edit Status"
+                        >
+                          <Edit size={16} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
@@ -166,6 +196,51 @@ export default function Pesanan() {
           </>
         )}
       </div>
+
+      {/* Modal Edit Status */}
+      {editModal.isOpen && (
+        <div className="pesanan__modal-overlay">
+          <div className="pesanan__modal">
+            <div className="pesanan__modal-header">
+              <h3>Update Status Pesanan #{editModal.order?.id}</h3>
+              <button 
+                className="pesanan__modal-close" 
+                onClick={() => setEditModal({ isOpen: false, order: null, status: '' })}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateStatus}>
+              <div className="pesanan__modal-body">
+                <div className="pesanan__form-group">
+                  <label>Status Baru</label>
+                  <select 
+                    value={editModal.status} 
+                    onChange={(e) => setEditModal({...editModal, status: e.target.value})}
+                    required
+                  >
+                    {statusOptions.filter(opt => opt.value !== '').map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="pesanan__modal-footer">
+                <button 
+                  type="button" 
+                  className="pesanan__btn-cancel"
+                  onClick={() => setEditModal({ isOpen: false, order: null, status: '' })}
+                >
+                  Batal
+                </button>
+                <button type="submit" className="pesanan__btn-save" disabled={updating}>
+                  {updating ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
