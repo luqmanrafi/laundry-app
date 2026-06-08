@@ -69,6 +69,8 @@ export default function Pesanan() {
       alert(err.response?.data?.message || 'Gagal mengubah status pesanan');
     } finally {
       setUpdating(false);
+    }
+  }
   const getNextStatusAction = (currentStatus) => {
     switch (currentStatus) {
       case 'menunggu_kurir': return { status: 'kurir_menuju_lokasi', label: 'Terima (Override)' };
