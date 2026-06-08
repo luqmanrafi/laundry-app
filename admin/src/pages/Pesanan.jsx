@@ -7,7 +7,8 @@ import './Pesanan.css';
 const statusOptions = [
   { value: '', label: 'Semua Status' },
   { value: 'menunggu_kurir', label: 'Menunggu Pickup' },
-  { value: 'dibawa_kurir_ke_laundry', label: 'Sedang Dijemput' },
+  { value: 'kurir_menuju_lokasi', label: 'Sedang Dijemput' },
+  { value: 'dibawa_kurir_ke_laundry', label: 'Diantar ke Laundry' },
   { value: 'sedang_dicuci', label: 'Diproses Laundry' },
   { value: 'siap_dikirim', label: 'Siap Diantar' },
   { value: 'proses_pengantaran', label: 'Diantar' },

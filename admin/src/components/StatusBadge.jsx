@@ -2,7 +2,8 @@ import './StatusBadge.css';
 
 const statusConfig = {
   menunggu_kurir: { label: 'Menunggu Pickup', color: 'orange' },
-  dibawa_kurir_ke_laundry: { label: 'Sedang Dijemput', color: 'blue' },
+  kurir_menuju_lokasi: { label: 'Sedang Dijemput', color: 'blue' },
+  dibawa_kurir_ke_laundry: { label: 'Diantar ke Laundry', color: 'indigo' },
   sedang_dicuci: { label: 'Diproses Laundry', color: 'purple' },
   siap_dikirim: { label: 'Siap Diantar', color: 'teal' },
   proses_pengantaran: { label: 'Diantar', color: 'indigo' },
