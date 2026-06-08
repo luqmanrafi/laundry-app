@@ -56,7 +56,7 @@ export default function Pesanan() {
     fetchOrders();
   };
 
-  const handleUpdateStatus = async (e) => {
+  const handleModalSubmit = async (e) => {
     e.preventDefault();
     if (!editModal.order || !editModal.status) return;
     
@@ -247,7 +247,7 @@ export default function Pesanan() {
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleUpdateStatus}>
+            <form onSubmit={handleModalSubmit}>
               <div className="pesanan__modal-body">
                 <div className="pesanan__form-group">
                   <label>Status Baru</label>
