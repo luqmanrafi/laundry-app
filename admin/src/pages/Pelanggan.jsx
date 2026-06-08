@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { Search } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import './Pelanggan.css';
 
 export default function Pelanggan() {
@@ -20,6 +20,16 @@ export default function Pelanggan() {
       console.error('Gagal mengambil data pelanggan:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus pelanggan ini? Semua data terkait akan ikut terhapus.')) return;
+    try {
+      await client.delete(`/admin/users/${id}`);
+      fetchCustomers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menghapus pelanggan');
     }
   };
 
@@ -69,6 +79,7 @@ export default function Pelanggan() {
                   <th>Email</th>
                   <th>No. HP</th>
                   <th>Terdaftar</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,11 +96,20 @@ export default function Pelanggan() {
                     <td>{customer.email}</td>
                     <td>{customer.nomorHp || '-'}</td>
                     <td className="pelanggan__date">{formatDate(customer.created_at)}</td>
+                    <td>
+                      <button 
+                        className="pelanggan__delete-btn"
+                        onClick={() => handleDelete(customer.id)}
+                        title="Hapus Pelanggan"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="pelanggan__empty">Tidak ada pelanggan ditemukan</td>
+                    <td colSpan="5" className="pelanggan__empty">Tidak ada pelanggan ditemukan</td>
                   </tr>
                 )}
               </tbody>

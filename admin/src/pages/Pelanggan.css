@@ -151,3 +151,21 @@
   padding: 48px 16px !important;
   color: var(--text-muted) !important;
 }
+
+.pelanggan__delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pelanggan__delete-btn:hover {
+  background: var(--danger);
+  color: #fff;
+}

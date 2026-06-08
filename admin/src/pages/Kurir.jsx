@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { Truck } from 'lucide-react';
+import { Truck, Plus, Trash2, X } from 'lucide-react';
 import './Kurir.css';
 
 export default function Kurir() {
   const [couriers, setCouriers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addModal, setAddModal] = useState({ isOpen: false, nama: '', email: '', nomorHp: '', password: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchCouriers();
@@ -22,6 +24,36 @@ export default function Kurir() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus kurir ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    try {
+      await client.delete(`/admin/users/${id}`);
+      fetchCouriers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menghapus kurir');
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await client.post('/auth/register', { 
+        nama: addModal.nama, 
+        email: addModal.email, 
+        nomorHp: addModal.nomorHp, 
+        password: addModal.password, 
+        role: 'kurir' 
+      });
+      setAddModal({ isOpen: false, nama: '', email: '', nomorHp: '', password: '' });
+      fetchCouriers();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menambahkan kurir');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('id-ID', {
       day: 'numeric', month: 'long', year: 'numeric'
@@ -35,6 +67,12 @@ export default function Kurir() {
           <h2 className="kurir__title">Manajemen Kurir</h2>
           <p className="kurir__subtitle">Total {couriers.length} kurir terdaftar</p>
         </div>
+        <button 
+          className="kurir__add-btn"
+          onClick={() => setAddModal({ ...addModal, isOpen: true })}
+        >
+          <Plus size={16} /> Tambah Kurir
+        </button>
       </div>
 
       <div className="kurir__grid">
@@ -74,10 +112,92 @@ export default function Kurir() {
                   <span className="kurir__detail-value">{formatDate(courier.created_at)}</span>
                 </div>
               </div>
+              <div className="kurir__actions">
+                <button 
+                  className="kurir__delete-btn"
+                  onClick={() => handleDelete(courier.id)}
+                  title="Hapus Kurir"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Modal Tambah Kurir */}
+      {addModal.isOpen && (
+        <div className="kurir__modal-overlay">
+          <div className="kurir__modal">
+            <div className="kurir__modal-header">
+              <h3>Tambah Kurir Baru</h3>
+              <button 
+                className="kurir__modal-close" 
+                onClick={() => setAddModal({ isOpen: false, nama: '', email: '', nomorHp: '', password: '' })}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleAdd}>
+              <div className="kurir__modal-body">
+                <div className="kurir__form-group">
+                  <label>Nama Lengkap</label>
+                  <input 
+                    type="text" 
+                    value={addModal.nama} 
+                    onChange={(e) => setAddModal({...addModal, nama: e.target.value})}
+                    required
+                    placeholder="Masukkan nama kurir"
+                  />
+                </div>
+                <div className="kurir__form-group">
+                  <label>Email</label>
+                  <input 
+                    type="email" 
+                    value={addModal.email} 
+                    onChange={(e) => setAddModal({...addModal, email: e.target.value})}
+                    required
+                    placeholder="kurir@laundry.com"
+                  />
+                </div>
+                <div className="kurir__form-group">
+                  <label>Nomor HP</label>
+                  <input 
+                    type="text" 
+                    value={addModal.nomorHp} 
+                    onChange={(e) => setAddModal({...addModal, nomorHp: e.target.value})}
+                    required
+                    placeholder="0812xxxxxx"
+                  />
+                </div>
+                <div className="kurir__form-group">
+                  <label>Password</label>
+                  <input 
+                    type="password" 
+                    value={addModal.password} 
+                    onChange={(e) => setAddModal({...addModal, password: e.target.value})}
+                    required
+                    placeholder="Minimal 6 karakter"
+                  />
+                </div>
+              </div>
+              <div className="kurir__modal-footer">
+                <button 
+                  type="button" 
+                  className="kurir__btn-cancel"
+                  onClick={() => setAddModal({ isOpen: false, nama: '', email: '', nomorHp: '', password: '' })}
+                >
+                  Batal
+                </button>
+                <button type="submit" className="kurir__btn-save" disabled={submitting}>
+                  {submitting ? 'Menyimpan...' : 'Simpan Kurir'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
