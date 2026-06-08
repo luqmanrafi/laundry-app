@@ -43,4 +43,6 @@ jobs:
           DB_PASSWORD: password_test
           DB_NAME: washweswos_test
           JWT_SECRET: rahasia_pipeline_123
+          LAUNDRY_LNG: 110.3838
+          LAUNDRY_LAT: -7.1123
         run: npm run test

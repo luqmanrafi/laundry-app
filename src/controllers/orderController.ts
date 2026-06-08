@@ -71,11 +71,19 @@ export const getOrderDetail = async (req: authRequest, res: Response): Promise<v
         const orderRepository = AppDataSource.getRepository(Order);
         const order = await orderRepository.findOne({
             where: { id: parseInt(id.id as string) },
-            relations: ['layanan', 'kurir']
+            relations: ['layanan']
         });
         if (!order) {
             res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
             return;
+        }
+
+        if (order.kurirId) {
+            const userRepository = AppDataSource.getRepository(User);
+            const kurir = await userRepository.findOne({ where: { id: order.kurirId } });
+            if (kurir) {
+                (order as any).kurir = { id: kurir.id, nama: kurir.nama, nomorHp: kurir.nomorHp };
+            }
         }
         
         const user = req.user;

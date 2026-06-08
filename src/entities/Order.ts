@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import type { Service } from "./Service.js";
 import type { Transaction } from "./Transaction.js";
-import type { User } from "./User.js";
 
 @Entity('orders')
 export class Order {
@@ -11,16 +10,8 @@ export class Order {
     @Column({ type: 'uuid' })
     userId!: string;
 
-    @ManyToOne('User')
-    @JoinColumn({ name: 'userId' })
-    user!: User;
-
     @Column({ type: 'uuid', nullable: true })
     kurirId!: string;
-
-    @ManyToOne('User')
-    @JoinColumn({ name: 'kurirId' })
-    kurir!: User;
 
     @ManyToOne('Service', (service: Service) => service.order)
     layanan!: Service;
