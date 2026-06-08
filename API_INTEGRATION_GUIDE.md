@@ -68,7 +68,8 @@ Future<void> login(String noHp, String password) async {
 
 **B. Role Kurir:**
 - `GET /api/pickup?latitude=x&longitude=y` : Menampilkan daftar order dengan status `menunggu_kurir` terdekat dari lokasi kurir. Wajib menyertakan lokasi kurir saat ini.
-- `PUT /api/orders/:id/take` : Mengambil pesanan (merubah status menjadi `dibawa_kurir_ke_laundry`). Wajib mengirim body `{ "berat": 3 }` (dalam Kg).
+- `PUT /api/orders/:id/take` : Menerima/mengklaim pesanan (merubah status menjadi `kurir_menuju_lokasi`). Kurir akan tercatat sebagai pengambil pesanan. (Tidak butuh body data).
+- `PUT /api/orders/:id/input-berat` : Menginput berat cucian saat kurir tiba di lokasi pelanggan (merubah status menjadi `dibawa_kurir_ke_laundry` dan memulai argo estimasi pengerjaan). Wajib mengirim body `{ "berat": 3 }` (dalam Kg).
 - `PUT /api/orders/:id/status` : Mengubah status secara manual (cth: `sedang_dicuci`, `siap_dikirim`, `selesai`).
 
 ---

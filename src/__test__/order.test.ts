@@ -105,17 +105,27 @@ describe('Skenario Pemesanan Laundry Lengkap', () => {
         expect(response.body.data[0]).toHaveProperty('order_id', orderId);
     });
 
-    it('5. Kurir bisa menginput berat pesanan', async () => {
-        const response = await request(app)
+    it('5. Kurir bisa mengambil pesanan dan menginput berat', async () => {
+        // Step 5a: Take Order
+        const takeResponse = await request(app)
         .put(`/api/orders/${orderId}/take`)
+        .set('Authorization', `Bearer ${tokenKurir}`);
+
+        expect(takeResponse.statusCode).toBe(200);
+        expect(takeResponse.body).toHaveProperty('message', 'Pesanan berhasil diambil. Silakan menuju lokasi pelanggan.');
+        expect(takeResponse.body.data.status).toBe('kurir_menuju_lokasi');
+
+        // Step 5b: Input Berat
+        const beratResponse = await request(app)
+        .put(`/api/orders/${orderId}/input-berat`)
         .set('Authorization', `Bearer ${tokenKurir}`)
         .send({ berat: 3 });
 
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty('message', 'Berat sudah ditambahkan. memproses pesanan');
-        expect(response.body.data.berat).toBe(3);
-        expect(response.body.data.totalBiaya).toBe(3 * 7000 + ongkir); // berat * hargaPerKg + ongkir
-        expect(response.body.data.status).toBe('dibawa_kurir_ke_laundry');
+        expect(beratResponse.statusCode).toBe(200);
+        expect(beratResponse.body).toHaveProperty('message', 'Berat sudah ditambahkan. Memproses pesanan ke laundry.');
+        expect(beratResponse.body.data.berat).toBe(3);
+        expect(beratResponse.body.data.totalBiaya).toBe(3 * 7000 + ongkir); // berat * hargaPerKg + ongkir
+        expect(beratResponse.body.data.status).toBe('dibawa_kurir_ke_laundry');
     });
 
     it('6. Kurir bisa mengubah status pesanan', async () => {

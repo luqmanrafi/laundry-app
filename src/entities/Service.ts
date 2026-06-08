@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm"
-import { Order } from "./Order.js";
+import type { Order } from "./Order.js";
 
 @Entity('services')
 export class Service {
@@ -17,8 +17,11 @@ export class Service {
 
     @Column({ type: 'float'})
     tarifOngkir!: number;
+
+    @Column({ type: 'int', default: 3 })
+    estimasiHari!: number;
     
-    @OneToMany(() => Order, (order) => order.layanan)
+    @OneToMany('Order', (order: Order) => order.layanan)
     order!: Order[];
 
     @CreateDateColumn({ type: 'timestamp' })

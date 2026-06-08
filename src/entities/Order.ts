@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from "typeorm";
-import { Service } from "./Service.js";
-import { Transaction } from "./Transaction.js";
+import type { Service } from "./Service.js";
+import type { Transaction } from "./Transaction.js";
 
 @Entity('orders')
 export class Order {
@@ -13,7 +13,7 @@ export class Order {
     @Column({ type: 'uuid', nullable: true })
     kurirId!: string;
 
-    @ManyToOne(() => Service, (service) => service.order)
+    @ManyToOne('Service', (service: Service) => service.order)
     layanan!: Service;
 
     @Column({type: 'float', default: 0})
@@ -53,12 +53,18 @@ export class Order {
     })
     totalBiaya!: number;
 
+    @Column({ type: 'timestamp', nullable: true })
+    estimasiSelesai!: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    waktuSelesai!: Date;
+
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
-    @OneToMany(() => Transaction, (transaction) => transaction.order)
+    @OneToMany('Transaction', (transaction: Transaction) => transaction.order)
     transactions!: Transaction[];
 
     @Column({

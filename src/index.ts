@@ -41,14 +41,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', paymentRoutes);
-app.use('/api/admin', adminRoutes);
-app.get('/', (req: Request, res: Response)=>{
-    res.json({
-        message: 'sukses',
-        status: 'Running',
-        time: new Date().toISOString()
-    });
+app.use('/', adminRoutes);
+
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'Running' });
 });
+
 
 if(process.env.NODE_ENV !== 'test'){
     AppDataSource.initialize().then(()=>{

@@ -7,7 +7,7 @@ const router = Router();
 router.get('/services', getAllService);
 router.post('/services', verifyToken, authorizeRole(['admin']),
     (req, res, next) => {
-        const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir'];
+        const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir', 'estimasiHari'];
         const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
 
         if (invalidFields.length > 0) {
@@ -21,7 +21,7 @@ router.post('/services', verifyToken, authorizeRole(['admin']),
 );
 router.put('/services/:id', verifyToken, authorizeRole(['admin']),
     (req, res, next) => {
-        const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir'];
+        const allowedFields = ['namaLayanan', 'hargaPerKg', 'keterangan', 'tarifOngkir', 'estimasiHari'];
         const invalidFields = Object.keys(req.body).filter(field => !allowedFields.includes(field));
 
         if (invalidFields.length > 0) {

@@ -63,7 +63,7 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
 export const getOrderDetail = async (req: authRequest, res: Response): Promise<void> => {
     try{
         const id = req.params;
-        if (!id) {
+        if (!id || !id.id) {
             res.status(400).json({ message: 'ID pesanan tidak ditemukan.' });
             return;
         }
@@ -76,6 +76,13 @@ export const getOrderDetail = async (req: authRequest, res: Response): Promise<v
             res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
             return;
         }
+        
+        const user = req.user;
+        if (user?.role === 'pelanggan' && order.userId !== user.id) {
+            res.status(403).json({ message: 'Akses ditolak. Anda tidak berhak melihat pesanan ini.' });
+            return;
+        }
+
         res.status(200).json({
             message: 'Pesanan ditemukan.',
             data: order
@@ -130,16 +137,10 @@ export const takeOrder = async (req: authRequest, res: Response): Promise<void> 
             return;
         }
         const orderId = parseInt(id);
-        const { berat } = req.body;
         const kurirId = req.user?.id;
 
         if (!kurirId) {
             res.status(401).json({ message: 'Akses ditolak. Kurir tidak terautentikasi.' });
-            return;
-        }
-
-        if (!berat || berat <= 0) {
-            res.status(400).json({ message: 'Berat harus diisi harus lebih dari 0kg.' });
             return;
         }
 
@@ -155,15 +156,12 @@ export const takeOrder = async (req: authRequest, res: Response): Promise<void> 
             });
             return;
         }
-        const totalBiaya = order.hargaPerkg * berat + order.ongkir;
 
         const updateResult = await orderRepository.update(
             { id: orderId, status: 'menunggu_kurir' },
             {
-                berat: berat,
-                totalBiaya: totalBiaya,
                 kurirId: kurirId as string,
-                status: 'dibawa_kurir_ke_laundry'
+                status: 'kurir_menuju_lokasi'
             }
         );
 
@@ -175,16 +173,158 @@ export const takeOrder = async (req: authRequest, res: Response): Promise<void> 
         }
 
         res.status(200).json({
-            message: 'Berat sudah ditambahkan. memproses pesanan',
+            message: 'Pesanan berhasil diambil. Silakan menuju lokasi pelanggan.',
+            data: {
+                orderId: order.id,
+                status: 'kurir_menuju_lokasi'
+            }
+        });
+    } catch (error) {
+        console.error('Error ketika mengambil pesanan : ', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+}
+
+export const inputBeratOrder = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            res.status(400).json({ message: 'ID pesanan tidak valid.' });
+            return;
+        }
+        const orderId = parseInt(id);
+        const { berat } = req.body;
+        const kurirId = req.user?.id;
+
+        if (!kurirId) {
+            res.status(401).json({ message: 'Akses ditolak. Kurir tidak terautentikasi.' });
+            return;
+        }
+
+        if (!berat || berat <= 0) {
+            res.status(400).json({ message: 'Berat harus diisi harus lebih dari 0kg.' });
+            return;
+        }
+
+        const orderRepository = AppDataSource.getRepository(Order);
+        const order = await orderRepository.findOne({ 
+            where: { id: orderId },
+            relations: ['layanan']
+        });
+        
+        if (!order) {
+            res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
+            return;
+        }
+        
+        if (order.kurirId !== kurirId) {
+            res.status(403).json({ message: 'Anda bukan kurir yang mengambil pesanan ini.' });
+            return;
+        }
+        
+        if (order.status !== 'kurir_menuju_lokasi') {
+            res.status(400).json({
+                message: 'Status pesanan tidak valid untuk input berat.',
+            });
+            return;
+        }
+        
+        const totalBiaya = order.hargaPerkg * berat + order.ongkir;
+
+        const estimasiSelesai = new Date();
+        estimasiSelesai.setDate(estimasiSelesai.getDate() + (order.layanan?.estimasiHari || 3));
+
+        const updateResult = await orderRepository.update(
+            { id: orderId, status: 'kurir_menuju_lokasi' },
+            {
+                berat: berat,
+                totalBiaya: totalBiaya,
+                status: 'dibawa_kurir_ke_laundry',
+                estimasiSelesai: estimasiSelesai
+            }
+        );
+
+        if (updateResult.affected === 0) {
+            res.status(400).json({
+                message: 'Gagal memproses input berat.',
+            });
+            return;
+        }
+
+        res.status(200).json({
+            message: 'Berat sudah ditambahkan. Memproses pesanan ke laundry.',
             data: {
                 orderId: order.id,
                 berat: berat,
                 totalBiaya: totalBiaya,
+                estimasiSelesai: estimasiSelesai,
                 status: 'dibawa_kurir_ke_laundry'
             }
         });
     } catch (error) {
         console.error('Error ketika menambahkan berat pesanan : ', error);
+        res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
+    }
+}
+
+export const antarOrder = async (req: authRequest, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            res.status(400).json({ message: 'ID pesanan tidak valid.' });
+            return;
+        }
+        const orderId = parseInt(id);
+        const kurirId = req.user?.id;
+
+        if (!kurirId) {
+            res.status(401).json({ message: 'Akses ditolak. Kurir tidak terautentikasi.' });
+            return;
+        }
+
+        const orderRepository = AppDataSource.getRepository(Order);
+        const order = await orderRepository.findOne({ where: { id: orderId } });
+        if (!order) {
+            res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
+            return;
+        }
+        if (order.kurirId !== null){
+            res.status(400).json({
+                message: 'Pesanan sudah diambil oleh kurir lain.',
+            });
+            return;
+        }
+        if (order.status !== 'siap_dikirim') {
+            res.status(400).json({
+                message: 'Pesanan belum siap untuk diantar.',
+            });
+            return;
+        }
+
+        const updateResult = await orderRepository.update(
+            { id: orderId, status: 'siap_dikirim' },
+            {
+                kurirId: kurirId as string,
+                status: 'proses_pengantaran'
+            }
+        );
+
+        if (updateResult.affected === 0) {
+            res.status(400).json({
+                message: 'Pesanan gagal diproses, kemungkinan pesanan baru saja diambil oleh kurir lain.',
+            });
+            return;
+        }
+
+        res.status(200).json({
+            message: 'Pesanan sedang diantar.',
+            data: {
+                orderId: order.id,
+                status: 'proses_pengantaran'
+            }
+        });
+    } catch (error) {
+        console.error('Error ketika mengantar pesanan : ', error);
         res.status(500).json({ message: 'Terjadi error pada server. Harap coba lagi.' });
     }
 }
@@ -234,6 +374,7 @@ export const updateStatusOrder = async (req: authRequest, res: Response): Promis
         const { status } = req.body;
 
         const statusValid = [
+            'kurir_menuju_lokasi',
             'dibawa_kurir_ke_laundry',
             'sedang_dicuci',
             'siap_dikirim',
@@ -246,14 +387,29 @@ export const updateStatusOrder = async (req: authRequest, res: Response): Promis
         }
 
         const orderRepository = AppDataSource.getRepository(Order);
-        const updateResult = await orderRepository.update(orderId, { status });
-
-        if(updateResult.affected === 0){
-            res.status(404).json({message: 'ID order tidak dapat ditemukan.'});
+        const order = await orderRepository.findOne({ where: { id: orderId } });
+        
+        if (!order) {
+            res.status(404).json({ message: 'ID order tidak dapat ditemukan.' });
             return;
         }
 
-        const updatedOrder = await orderRepository.findOne({where: {id: orderId}});
+        if (req.user?.role === 'kurir' && order.kurirId !== req.user?.id) {
+            res.status(403).json({ message: 'Akses ditolak. Anda bukan kurir untuk pesanan ini.' });
+            return;
+        }
+
+        const updateData: any = { status };
+        if (status === 'sedang_dicuci') {
+            updateData.kurirId = null;
+        }
+        if (status === 'selesai') {
+            updateData.waktuSelesai = new Date();
+        }
+        
+        await orderRepository.update(orderId, updateData);
+
+        const updatedOrder = await orderRepository.findOne({ where: { id: orderId } });
         res.status(200).json({
             message: `Status pesanan berhasil diubah menjadi: ${status}`,
             data: updatedOrder 
