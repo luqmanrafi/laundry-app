@@ -101,17 +101,10 @@ export default function Dashboard() {
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '65%',
+    cutout: '70%',
     plugins: {
       legend: {
-        position: 'right',
-        labels: {
-          color: '#94a3b8',
-          font: { size: 12, family: 'Inter' },
-          padding: 16,
-          usePointStyle: true,
-          pointStyleWidth: 10,
-        },
+        display: false, // Kita gunakan custom legend HTML agar tidak gepeng
       },
     },
   };
@@ -239,12 +232,34 @@ export default function Dashboard() {
       <div className="dashboard__middle">
         <div className="dashboard__chart-card">
           <h3 className="dashboard__card-title">Status Pesanan</h3>
-          <div className="dashboard__doughnut-wrap">
-            <div className="dashboard__doughnut-center">
-              <span className="dashboard__doughnut-total">{totalOrders}</span>
-              <span className="dashboard__doughnut-label">Total</span>
+          <div className="dashboard__doughnut-container">
+            <div className="dashboard__doughnut-chart">
+              <div className="dashboard__doughnut-center">
+                <span className="dashboard__doughnut-total">{totalOrders}</span>
+                <span className="dashboard__doughnut-label">Total</span>
+              </div>
+              <Doughnut data={doughnutData} options={doughnutOptions} />
             </div>
-            <Doughnut data={doughnutData} options={doughnutOptions} />
+            <div className="dashboard__doughnut-legend">
+              {hasData ? (
+                stats.statusBreakdown.map((s) => (
+                  <div key={s.status} className="dashboard__legend-item">
+                    <span 
+                      className="dashboard__legend-color" 
+                      style={{ backgroundColor: statusColors[s.status] || '#6b7280' }}
+                    ></span>
+                    <span className="dashboard__legend-text">
+                      {statusLabels[s.status] || s.status}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="dashboard__legend-item">
+                  <span className="dashboard__legend-color" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}></span>
+                  <span className="dashboard__legend-text">Belum ada data</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
