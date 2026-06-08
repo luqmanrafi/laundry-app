@@ -2,15 +2,15 @@
 
 :root {
   /* Background */
-  --bg-main: #0d1117;
-  --sidebar-bg: #0a1628;
-  --card-bg: rgba(17, 29, 53, 0.6);
-  --surface: rgba(255, 255, 255, 0.03);
+  --bg-main: #0f172a;
+  --sidebar-bg: rgba(15, 23, 42, 0.95);
+  --card-bg: rgba(30, 41, 59, 0.65);
+  --surface: rgba(255, 255, 255, 0.05);
 
   /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
   /* Accent */
   --accent: #3b82f6;
@@ -64,6 +64,36 @@ body {
 
 .app-content--collapsed {
   margin-left: 72px;
+}
+
+.app-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.app-overlay--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    margin-left: 0 !important;
+  }
+  
+  .app-overlay {
+    display: block;
+  }
 }
 
 .app-page {

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { WashingMachine, LayoutDashboard, Package, Truck, Users, ReceiptText, Tag, Settings, LogOut } from 'lucide-react';
+import { WashingMachine, LayoutDashboard, Package, Truck, Users, ReceiptText, Tag, Settings, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
@@ -37,6 +37,9 @@ export default function Sidebar({ collapsed, onToggle }) {
             </div>
           )}
         </div>
+        <button className="sidebar__close-btn" onClick={onToggle}>
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="sidebar__nav">
@@ -81,12 +84,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </nav>
 
       <div className="sidebar__footer">
-        <button className="sidebar__logout-btn" onClick={logout} title="Logout">
-          <LogOut size={18} />
-          {!collapsed && <span>Logout</span>}
-        </button>
-        
-        <div className="sidebar__user" style={{ marginTop: '12px' }}>
+        <div className="sidebar__user">
           <div className="sidebar__avatar">
             {getInitials(user?.nama)}
           </div>

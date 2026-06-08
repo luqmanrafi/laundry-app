@@ -31,9 +31,18 @@ function AppLayout() {
 
   return (
     <div className="app-layout">
+      {/* Overlay untuk mobile saat sidebar terbuka */}
+      <div 
+        className={`app-overlay ${!collapsed ? 'app-overlay--active' : ''}`} 
+        onClick={() => setCollapsed(true)}
+      />
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
       <div className={`app-content ${collapsed ? 'app-content--collapsed' : ''}`}>
-        <Header title={pageInfo.title} subtitle={pageInfo.subtitle} />
+        <Header 
+          title={pageInfo.title} 
+          subtitle={pageInfo.subtitle} 
+          onMenuClick={() => setCollapsed(!collapsed)}
+        />
         <div className="app-page">
           <Routes>
             <Route path="/" element={<Dashboard />} />

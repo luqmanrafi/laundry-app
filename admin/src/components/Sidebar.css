@@ -8,8 +8,9 @@
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-right: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
 }
 
 .sidebar--collapsed {
@@ -17,8 +18,27 @@
 }
 
 .sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar__close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar__close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .sidebar__logo {
@@ -203,6 +223,21 @@
 .sidebar__logout:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+  
+  .sidebar--collapsed {
+    transform: translateX(-100%);
+    width: 260px; /* Keep full width, just move it off-screen */
+  }
+  
+  .sidebar__close-btn {
+    display: flex;
+  }
 }
 
 /* Scrollbar */
