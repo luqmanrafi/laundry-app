@@ -22,6 +22,7 @@ export default function Pesanan() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -48,6 +49,31 @@ export default function Pesanan() {
     e.preventDefault();
     setPage(1);
     fetchOrders();
+  };
+
+  const getNextStatusAction = (currentStatus) => {
+    switch (currentStatus) {
+      case 'menunggu_kurir': return { status: 'kurir_menuju_lokasi', label: 'Terima (Override)' };
+      case 'kurir_menuju_lokasi': return { status: 'dibawa_kurir_ke_laundry', label: 'Barang Tiba' };
+      case 'dibawa_kurir_ke_laundry': return { status: 'sedang_dicuci', label: 'Mulai Cuci' };
+      case 'sedang_dicuci': return { status: 'siap_dikirim', label: 'Selesai Cuci' };
+      case 'siap_dikirim': return { status: 'proses_pengantaran', label: 'Kirim Barang' };
+      case 'proses_pengantaran': return { status: 'selesai', label: 'Selesaikan' };
+      default: return null;
+    }
+  };
+
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    if (!confirm(`Apakah Anda yakin ingin memperbarui status menjadi: ${statusOptions.find(o => o.value === newStatus)?.label || newStatus}?`)) return;
+    setUpdatingStatus(orderId);
+    try {
+      await client.put(`/orders/${orderId}/status`, { status: newStatus });
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal memperbarui status');
+    } finally {
+      setUpdatingStatus(null);
+    }
   };
 
   const formatRupiah = (num) => {
@@ -117,6 +143,7 @@ export default function Pesanan() {
                     <th>Pembayaran</th>
                     <th>Tanggal Dibuat</th>
                     <th>Estimasi Selesai</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,11 +158,24 @@ export default function Pesanan() {
                       <td><StatusBadge status={order.paymentStatus} /></td>
                       <td className="pesanan__date">{formatDate(order.createdAt)}</td>
                       <td className="pesanan__date">{order.estimasiSelesai ? formatDate(order.estimasiSelesai) : '-'}</td>
+                      <td>
+                        {getNextStatusAction(order.status) ? (
+                          <button
+                            className="pesanan__action-btn"
+                            disabled={updatingStatus === order.id}
+                            onClick={() => handleUpdateStatus(order.id, getNextStatusAction(order.status).status)}
+                          >
+                            {updatingStatus === order.id ? 'Loading...' : getNextStatusAction(order.status).label}
+                          </button>
+                        ) : (
+                          <span className="pesanan__action-none">-</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan="9" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
+                      <td colSpan="10" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
                     </tr>
                   )}
                 </tbody>
