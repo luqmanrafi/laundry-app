@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: 'http://localhost:3000/api', 
-  // ganti dengan ngrok URL jika sedang diuji lewat internet
+  // Menggunakan Environment Variable (Standar Industri)
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', 
 });
 
 // Request interceptor untuk menambahkan token

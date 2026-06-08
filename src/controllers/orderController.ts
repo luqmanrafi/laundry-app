@@ -29,7 +29,8 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
             [longitude,latitude,process.env.LAUNDRY_LNG,process.env.LAUNDRY_LAT]
         )
         const jarakKm = queryJarak[0].jarak_meter/1000;
-        const ongkir = Math.round(jarakKm * serviceData.tarifOngkir);
+        const jarakDihitung = Math.max(1, jarakKm); // Jarak minimum 1 KM
+        const ongkir = Math.round(jarakDihitung * serviceData.tarifOngkir);
 
         const orderRepository = AppDataSource.getRepository(Order);
         const orderBaru = orderRepository.create({
@@ -70,11 +71,19 @@ export const getOrderDetail = async (req: authRequest, res: Response): Promise<v
         const orderRepository = AppDataSource.getRepository(Order);
         const order = await orderRepository.findOne({
             where: { id: parseInt(id.id as string) },
-            relations: ['layanan', 'kurir']
+            relations: ['layanan']
         });
         if (!order) {
             res.status(404).json({ message: 'Pesanan tidak ditemukan.' });
             return;
+        }
+
+        if (order.kurirId) {
+            const userRepository = AppDataSource.getRepository(User);
+            const kurir = await userRepository.findOne({ where: { id: order.kurirId } });
+            if (kurir) {
+                (order as any).kurir = { id: kurir.id, nama: kurir.nama, nomorHp: kurir.nomorHp };
+            }
         }
         
         const user = req.user;
@@ -104,6 +113,8 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
         const orderRepository = AppDataSource.getRepository(Order);
         const orderTerdekat = await orderRepository
             .createQueryBuilder('order')
+            .leftJoin(User, 'user', 'user.id = order.userId')
+            .addSelect('user.nama', 'pelanggan_nama')
             .where('order.status = :status', { status: 'menunggu_kurir' })
             .addSelect(
                 `ST_DistanceSphere(

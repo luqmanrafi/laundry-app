@@ -17,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   final Dio dio = Dio(BaseOptions(
-    baseUrl: 'http://<IP_SERVER_ANDA>:3000/api', // Ganti dengan URL server/IP komputer Anda (bukan localhost jika di emulator/device fisik)
+    baseUrl: 'https://luqmanrafi-laundry-app.hf.space/api', // Ganti dengan URL Hugging Face Spaces Anda
     connectTimeout: const Duration(seconds: 10),
   ));
 
@@ -113,7 +113,7 @@ Contoh integrasi pada klien JS:
 import { io } from "socket.io-client";
 
 // Inisialisasi koneksi socket
-const socket = io("http://<IP_SERVER_ANDA>:3000");
+const socket = io("https://luqmanrafi-laundry-app.hf.space");
 
 socket.on("connect", () => {
   console.log("Admin terhubung ke real-time server!");

@@ -7,7 +7,8 @@ import './Pesanan.css';
 const statusOptions = [
   { value: '', label: 'Semua Status' },
   { value: 'menunggu_kurir', label: 'Menunggu Pickup' },
-  { value: 'dibawa_kurir_ke_laundry', label: 'Sedang Dijemput' },
+  { value: 'kurir_menuju_lokasi', label: 'Sedang Dijemput' },
+  { value: 'dibawa_kurir_ke_laundry', label: 'Diantar ke Laundry' },
   { value: 'sedang_dicuci', label: 'Diproses Laundry' },
   { value: 'siap_dikirim', label: 'Siap Diantar' },
   { value: 'proses_pengantaran', label: 'Diantar' },
@@ -26,6 +27,7 @@ export default function Pesanan() {
   // Modal State
   const [editModal, setEditModal] = useState({ isOpen: false, order: null, status: '' });
   const [updating, setUpdating] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -67,6 +69,28 @@ export default function Pesanan() {
       alert(err.response?.data?.message || 'Gagal mengubah status pesanan');
     } finally {
       setUpdating(false);
+  const getNextStatusAction = (currentStatus) => {
+    switch (currentStatus) {
+      case 'menunggu_kurir': return { status: 'kurir_menuju_lokasi', label: 'Terima (Override)' };
+      case 'kurir_menuju_lokasi': return { status: 'dibawa_kurir_ke_laundry', label: 'Barang Tiba' };
+      case 'dibawa_kurir_ke_laundry': return { status: 'sedang_dicuci', label: 'Mulai Cuci' };
+      case 'sedang_dicuci': return { status: 'siap_dikirim', label: 'Selesai Cuci' };
+      case 'siap_dikirim': return { status: 'proses_pengantaran', label: 'Kirim Barang' };
+      case 'proses_pengantaran': return { status: 'selesai', label: 'Selesaikan' };
+      default: return null;
+    }
+  };
+
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    if (!confirm(`Apakah Anda yakin ingin memperbarui status menjadi: ${statusOptions.find(o => o.value === newStatus)?.label || newStatus}?`)) return;
+    setUpdatingStatus(orderId);
+    try {
+      await client.put(`/orders/${orderId}/status`, { status: newStatus });
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal memperbarui status');
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -160,12 +184,23 @@ export default function Pesanan() {
                         >
                           <Edit size={16} />
                         </button>
+                        {getNextStatusAction(order.status) ? (
+                          <button
+                            className="pesanan__action-btn"
+                            disabled={updatingStatus === order.id}
+                            onClick={() => handleUpdateStatus(order.id, getNextStatusAction(order.status).status)}
+                          >
+                            {updatingStatus === order.id ? 'Loading...' : getNextStatusAction(order.status).label}
+                          </button>
+                        ) : (
+                          <span className="pesanan__action-none">-</span>
+                        )}
                       </td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan="9" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
+                      <td colSpan="10" className="pesanan__empty">Tidak ada pesanan ditemukan</td>
                     </tr>
                   )}
                 </tbody>

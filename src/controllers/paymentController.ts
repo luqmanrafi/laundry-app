@@ -34,9 +34,16 @@ export const payOrder = async (req: authRequest, res: Response): Promise<void> =
             return;
         }
         
-        const amount = order.totalBiaya;
+        const requestAmount = req.body.amount || req.body.gross_amount;
+        const finalAmount = requestAmount ? parseFloat(requestAmount) : (order.totalBiaya || 10000);
 
-        const transaction = await paymentService.createTransaction(order, amount);
+        // Simpan total biaya ke database jika dikirim dari Flutter (agar Dashboard Admin ikut update)
+        if (requestAmount && order.totalBiaya !== finalAmount) {
+            order.totalBiaya = finalAmount;
+            await orderRepository.save(order);
+        }
+
+        const transaction = await paymentService.createTransaction(order, finalAmount);
         
         res.status(200).json({
             status: "success",

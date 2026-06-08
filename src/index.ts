@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import express, { type Request, type Response } from 'express';
-import {Pool} from 'pg';
+import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -20,7 +20,7 @@ const port = parseInt(process.env.PORT || '3000', 10);
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {origin: '*', methods: ['GET', 'POST']}
+    cors: { origin: '*', methods: ['GET', 'POST'] }
 })
 
 // CORS middleware untuk admin frontend
@@ -41,19 +41,19 @@ app.use('/api/auth', authRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', paymentRoutes);
-app.use('/', adminRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({ status: 'Running' });
 });
 
 
-if(process.env.NODE_ENV !== 'test'){
-    AppDataSource.initialize().then(()=>{
+if (process.env.NODE_ENV !== 'test') {
+    AppDataSource.initialize().then(() => {
         console.log('Sukses menghubungkan ORM!')
     })
-    .catch((error)=>console.log('Error! gagal menyambungkan ORM', error));
-    
+        .catch((error) => console.log('Error! gagal menyambungkan ORM', error));
+
     await connectRedis();
     setupTrackingSockets(io);
 
@@ -66,16 +66,16 @@ if(process.env.NODE_ENV !== 'test'){
     });
 
     pool.connect((err, client, release) => {
-        if(err){
-            return console.error('Koneksi error. Pastikan docker menyala',err.stack)
+        if (err) {
+            return console.error('Koneksi error. Pastikan docker menyala', err.stack)
         }
         console.log('Koneksi sukses!');
         release();
     });
 
-    app.listen(port, '0.0.0.0', ()=>{
+    app.listen(port, '0.0.0.0', () => {
         console.log(`Server running pada port : ${port}`);
-    }); 
+    });
 }
 
 export default app;
