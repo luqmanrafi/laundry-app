@@ -164,7 +164,11 @@ export default function Dashboard() {
         ticks: {
           color: '#64748b',
           font: { size: 11, family: 'Inter' },
-          callback: (val) => `Rp ${(val / 1000000).toFixed(1)} jt`,
+          callback: (val) => {
+            if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1)} jt`;
+            if (val >= 1000) return `Rp ${(val / 1000).toFixed(0)} rb`;
+            return `Rp ${val}`;
+          },
         },
       },
     },
@@ -228,9 +232,6 @@ export default function Dashboard() {
           iconColor="orange"
           label="Total Pelanggan"
           value={stats?.totalCustomers || 0}
-          change="10% dari kemarin"
-          changeType="up"
-          sparkData={[6, 8, 7, 9, 10, 11, 13]}
         />
       </div>
 
