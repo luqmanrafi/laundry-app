@@ -29,7 +29,8 @@ export const buatPesanan = async (req: authRequest, res: Response): Promise<void
             [longitude,latitude,process.env.LAUNDRY_LNG,process.env.LAUNDRY_LAT]
         )
         const jarakKm = queryJarak[0].jarak_meter/1000;
-        const ongkir = Math.round(jarakKm * serviceData.tarifOngkir);
+        const jarakDihitung = Math.max(1, jarakKm); // Jarak minimum 1 KM
+        const ongkir = Math.round(jarakDihitung * serviceData.tarifOngkir);
 
         const orderRepository = AppDataSource.getRepository(Order);
         const orderBaru = orderRepository.create({
