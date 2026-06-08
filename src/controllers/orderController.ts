@@ -113,6 +113,8 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
         const orderRepository = AppDataSource.getRepository(Order);
         const orderTerdekat = await orderRepository
             .createQueryBuilder('order')
+            .leftJoin(User, 'user', 'user.id = order.userId')
+            .addSelect('user.nama', 'pelanggan_nama')
             .where('order.status = :status', { status: 'menunggu_kurir' })
             .addSelect(
                 `ST_DistanceSphere(
