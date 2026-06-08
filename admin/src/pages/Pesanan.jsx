@@ -56,7 +56,7 @@ export default function Pesanan() {
     fetchOrders();
   };
 
-  const handleModalUpdateStatus = async (e) => {
+  const handleModalSubmit = async (e) => {
     e.preventDefault();
     if (!editModal.order || !editModal.status) return;
     
@@ -70,8 +70,7 @@ export default function Pesanan() {
     } finally {
       setUpdating(false);
     }
-  };
-
+  }
   const getNextStatusAction = (currentStatus) => {
     switch (currentStatus) {
       case 'menunggu_kurir': return { status: 'kurir_menuju_lokasi', label: 'Terima (Override)' };
@@ -269,7 +268,7 @@ export default function Pesanan() {
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleModalUpdateStatus}>
+            <form onSubmit={handleModalSubmit}>
               <div className="pesanan__modal-body">
                 <div className="pesanan__form-group">
                   <label>Status Baru</label>
@@ -300,6 +299,7 @@ export default function Pesanan() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

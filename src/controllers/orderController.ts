@@ -115,6 +115,8 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
             .createQueryBuilder('order')
             .leftJoin(User, 'user', 'user.id = order.userId')
             .addSelect('user.nama', 'pelanggan_nama')
+            .addSelect('user.email', 'pelanggan_email')
+            .addSelect('user.nomorHp', 'pelanggan_nohp')
             .where('order.status = :status', { status: 'menunggu_kurir' })
             .addSelect(
                 `ST_DistanceSphere(
