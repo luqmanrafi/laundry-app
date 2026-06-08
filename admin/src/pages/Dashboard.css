@@ -72,17 +72,24 @@
 }
 
 /* Doughnut */
-.dashboard__doughnut-wrap {
-  position: relative;
-  height: 260px;
+.dashboard__doughnut-container {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 32px;
+  height: 260px;
+}
+
+.dashboard__doughnut-chart {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
 }
 
 .dashboard__doughnut-center {
   position: absolute;
-  left: 26%;
+  left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -103,6 +110,32 @@
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+.dashboard__doughnut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.dashboard__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard__legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard__legend-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.2;
 }
 
 /* Recent Orders */
@@ -300,5 +333,11 @@
   }
   .dashboard {
     padding: 16px;
+  }
+  .dashboard__doughnut-container {
+    flex-direction: column;
+    gap: 24px;
+    height: auto;
+    padding: 16px 0;
   }
 }
