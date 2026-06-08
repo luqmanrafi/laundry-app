@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
 import StatusBadge from '../components/StatusBadge';
-import { Search, Edit, X } from 'lucide-react';
+import { Search, Edit, X, Trash2 } from 'lucide-react';
 import './Pesanan.css';
 
 const statusOptions = [
@@ -96,6 +96,16 @@ export default function Pesanan() {
     }
   };
 
+  const handleDelete = async (orderId) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus pesanan #${orderId}? Tindakan ini tidak dapat dibatalkan.`)) return;
+    try {
+      await client.delete(`/orders/${orderId}`);
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Gagal menghapus pesanan');
+    }
+  };
+
   const formatRupiah = (num) => {
     if (!num) return '-';
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
@@ -179,24 +189,35 @@ export default function Pesanan() {
                       <td className="pesanan__date">{formatDate(order.createdAt)}</td>
                       <td className="pesanan__date">{order.estimasiSelesai ? formatDate(order.estimasiSelesai) : '-'}</td>
                       <td>
-                        <button 
-                          className="pesanan__edit-btn"
-                          onClick={() => setEditModal({ isOpen: true, order, status: order.status })}
-                          title="Edit Status"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        {getNextStatusAction(order.status) ? (
-                          <button
-                            className="pesanan__action-btn"
-                            disabled={updatingStatus === order.id}
-                            onClick={() => handleUpdateStatus(order.id, getNextStatusAction(order.status).status)}
-                          >
-                            {updatingStatus === order.id ? 'Loading...' : getNextStatusAction(order.status).label}
-                          </button>
-                        ) : (
-                          <span className="pesanan__action-none">-</span>
-                        )}
+                        <div className="pesanan__actions-wrapper">
+                          <div className="pesanan__actions-top">
+                            <button 
+                              className="pesanan__edit-btn"
+                              onClick={() => setEditModal({ isOpen: true, order, status: order.status })}
+                              title="Edit Status"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              className="pesanan__delete-btn"
+                              onClick={() => handleDelete(order.id)}
+                              title="Hapus Pesanan"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                          {getNextStatusAction(order.status) ? (
+                            <button
+                              className="pesanan__action-btn"
+                              disabled={updatingStatus === order.id}
+                              onClick={() => handleUpdateStatus(order.id, getNextStatusAction(order.status).status)}
+                            >
+                              {updatingStatus === order.id ? 'Loading...' : getNextStatusAction(order.status).label}
+                            </button>
+                          ) : (
+                            <span className="pesanan__action-none">-</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
