@@ -117,7 +117,7 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
             .addSelect('user.nama', 'pelanggan_nama')
             .addSelect('user.email', 'pelanggan_email')
             .addSelect('user.nomorHp', 'pelanggan_nohp')
-            .where('order.status = :status', { status: 'menunggu_kurir' })
+            .where('order.status IN (:...statuses)', { statuses: ['menunggu_kurir', 'siap_dikirim'] })
             .addSelect(
                 `ST_DistanceSphere(
                     order.lokasiPenjemputan,
@@ -129,7 +129,8 @@ export const getOrderTerdekat = async (req: authRequest, res: Response): Promise
                 longitude: parseFloat(longitude as string),
                 latitude: parseFloat(latitude as string)
             })
-            .orderBy('jarak_meter', 'ASC')
+            // Optimasi: Menggunakan operator <-> (KNN) untuk memanfaatkan Spatial Index PostGIS
+            .orderBy('order.lokasiPenjemputan <-> ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)')
             .getRawMany();
 
         res.status(200).json({
