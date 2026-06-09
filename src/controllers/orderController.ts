@@ -86,6 +86,14 @@ export const getOrderDetail = async (req: authRequest, res: Response): Promise<v
             }
         }
         
+        if (order.userId) {
+            const userRepository = AppDataSource.getRepository(User);
+            const pelanggan = await userRepository.findOne({ where: { id: order.userId } });
+            if (pelanggan) {
+                (order as any).pelanggan = { id: pelanggan.id, nama: pelanggan.nama, email: pelanggan.email, nomorHp: pelanggan.nomorHp };
+            }
+        }
+        
         const user = req.user;
         if (user?.role === 'pelanggan' && order.userId !== user.id) {
             res.status(403).json({ message: 'Akses ditolak. Anda tidak berhak melihat pesanan ini.' });
@@ -351,8 +359,12 @@ export const getOrderHistory = async (req: authRequest, res: Response): Promise<
             return;
         }
         const orderRepository = AppDataSource.getRepository(Order);
+        
+        const userRole = req.user?.role;
+        const whereCondition = userRole === 'kurir' ? { kurirId: userId } : { userId: userId };
+
         const riwayat = await orderRepository.find({
-            where: { userId: userId },
+            where: whereCondition,
             relations: ['layanan'],
             order: {
                 createdAt: 'DESC'
@@ -474,6 +486,9 @@ export const getAllOrders = async (req: authRequest, res: Response): Promise<voi
         const queryBuilder = orderRepository
             .createQueryBuilder('order')
             .leftJoinAndSelect('order.layanan', 'layanan')
+            .leftJoin(User, 'pelanggan', 'pelanggan.id = order.userId')
+            .leftJoin(User, 'kurir', 'kurir.id = order.kurirId')
+            .addSelect(['pelanggan.nama', 'pelanggan.nomorHp', 'kurir.nama', 'kurir.nomorHp'])
             .orderBy('order.createdAt', 'DESC');
 
         if (status && typeof status === 'string') {
